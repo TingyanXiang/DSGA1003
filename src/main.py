@@ -23,6 +23,8 @@ hyperparam.add_argument("--criterion", type = str, default = "gini",
                         help = "purity measurement")
 hyperparam.add_argument("--max_depth", type = int, default = None, 
                         help = "maximum depth in tree learners")
+hyperparam.add_argument("--max_depth_xgb", type = int, default = 3, 
+                        help = "maximum depth in tree learners in XGBoost")
 hyperparam.add_argument("--min_samples_split", type = int, default = 2, 
                         help = "min num of samples in a node that can be splitted")
 hyperparam.add_argument("--class_weight", type = str, default = "balanced", 
