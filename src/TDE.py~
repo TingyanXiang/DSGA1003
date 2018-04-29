@@ -9,10 +9,10 @@ Created on Thu Apr 26 09:04:42 2018
 import numpy as np
 import collections
 import copy
-import lightgbm as lgb
+# XGBOOST
+import xgboost as xgb
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
-from xgboost import XGBClassifier
 
 class TimeDependentEnsembler():
     def __init__(self, classifier_name, dependency_length, dependency_weight_decay, hyperparam,
@@ -32,9 +32,8 @@ class TimeDependentEnsembler():
         categorical_features (list): feature (names) that should be considered as categorical feature
         rare_category_threshold (list): threshold for a category to be considered rare in the corresponding feature
         """
-        supported_classifier = set("decision_tree", "random_forest", "xgboost", "lightgbm")
-        if classifier_name not in supported_classifier:
-            raise ValueError("Unidentified classifier name, see document for supported classifiers")
+        if classifier_name != "decision_tree" and classifier_name != "random_forest":
+            raise ValueError("Unidentified classifier name, only decision tree and random forest are allowed")
         self.classifier_name = classifier_name
         self.dependency_length= dependency_length
         self.dependency_weight_decay = dependency_weight_decay
@@ -59,28 +58,19 @@ class TimeDependentEnsembler():
         X (np array): train features
         y (np array): train labels
         """
-        new_classifier = None  
+        new_classifier = None
         # Expand the hyperparam block if needed
         if self.classifier_name == "random_forest":
             new_classifier = RandomForestClassifier(n_estimators = self.hyperparam.get("n_estimators", 10), 
                                                     criterion = self.hyperparam.get("criterion", "gini"), 
                                                     max_depth = self.hyperparam.get("max_depth", None),
                                                     min_samples_split = self.hyperparam.get("min_samples_split", 2),
-                                                    class_weight = self.hyperparam.get("class_weight", "balanced"))
-        elif self.classifier_name == "decision_tree":
+                                                    class_weight = self.hyperparam.get("class_weight", None))
+        else:
             new_classifier = DecisionTreeClassifier(criterion = self.hyperparam.get("criterion", "gini"),
                                                     max_depth = self.hyperparam.get("max_depth", None),
                                                     min_samples_split = self.hyperparam.get("min_samples_split", 2),
-                                                    class_weight = self.hyperparam.get("class_weight", "balanced"))
-        elif self.classifier_name == "xgboost":
-            new_classifier = XGBClassifier(silent = True, objective = "binary:logistic", 
-                                           learning_rate = self.hyperparam.get("learning_rate", 0.1),
-                                           n_estimators = self.hyperparam.get("n_estimators", 10),
-                                           max_depth = self.hyperparam.get("max_depth", 3),
-                                           scale_pos_weight = self.hyperparam.get("scale_pos_weight", 100.0))
-        else:
-            # LightGBM
-            new_classifier = None
+                                                    class_weight = self.hyperparam.get("class_weight", None))
         # Feature engineering on train set
         X, cur_dict = self.train_feature_engineering_function(X, self.categorical_features, 
                                                               self.rare_category_threshold)

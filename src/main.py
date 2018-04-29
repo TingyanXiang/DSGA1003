@@ -16,17 +16,21 @@ from TDE import TimeDependentEnsembler
 hyperparam = argparse.ArgumentParser(description = "TDE Demo")
 # Model-side params
 hyperparam.add_argument("--classifier_name", type = str, default = "random_forest", 
-                        help = "classifier used in TDE, 'randome_forest' and 'decision_tree' are currently supported")
+                        help = "classifier used in TDE")
 hyperparam.add_argument("--n_estimators", type = int, default = 10, 
                         help = "num of estimators in random forest")
 hyperparam.add_argument("--criterion", type = str, default = "gini", 
                         help = "purity measurement")
 hyperparam.add_argument("--max_depth", type = int, default = None, 
-                        help = "maximum depth trees")
+                        help = "maximum depth in tree learners")
 hyperparam.add_argument("--min_samples_split", type = int, default = 2, 
                         help = "min num of samples in a node that can be splitted")
-hyperparam.add_argument("--class_weight", type = str, default = None, 
-                        help = "class weight in trees")
+hyperparam.add_argument("--class_weight", type = str, default = "balanced", 
+                        help = "class weight in tree learners")
+hyperparam.add_argument("--scale_pos_weight", type = float, default = 100.0, 
+                        help = "class weight adjustment in XGBoost")
+hyperparam.add_argument("--learning_rate", type = float, default = 0.1, 
+                        help = "learning rate (eta) in XGBoost")
 
 # System-side params
 hyperparam.add_argument("--batch_len", type = int, default = 10000, 
