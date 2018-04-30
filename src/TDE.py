@@ -98,20 +98,23 @@ class TimeDependentEnsembler():
         
         X (np array): test features
         
-        return: class probability matrix: (num_instances, 2)
+        return: class probability matrix: (num_instances, 2), all predict proba matrix (list of matrices)
         """
         total_weight = 0
         cur_weight = 1
         # Here we assume it's a binary classification
         total_pred = np.array([[0.0, 0.0] for _ in range(X.shape[0])])
+        all_preds = []
         for i in range(len(self.model_queue) - 1, -1, -1):
             X_cur = copy.deepcopy(X)
             X_cur = self.test_feature_engineering_function(X_cur, self.categorical_features, 
                                                            self.rare_category_threshold,
                                                            self.dict_queue[i])
             # Potential optimization here: use 3d matrix to store all preds and reduce at the end
-            total_pred += self.model_queue[i].predict_proba(X_cur) * cur_weight
+            cur_pred = self.model_queue[i].predict_proba(X_cur)
+            total_pred += cur_pred * cur_weight
+            all_preds.append(cur_pred)
             total_weight += cur_weight
             cur_weight *= self.dependency_weight_decay
-        return total_pred / total_weight
+        return total_pred / total_weight, all_preds
     
