@@ -11,11 +11,13 @@ import matplotlib.pyplot as plt
 from sklearn import metrics
 from cleaner import get_train_features, get_test_features
 from TDE import TimeDependentEnsembler
-
+import time 
+import sys
+    
 hyperparam = argparse.ArgumentParser(description = "TDE Demo")
 # Model-side params
 hyperparam.add_argument("--classifier_name", type = str, default = "random_forest", 
-                        help = "classifier used in TDE")
+                        help = "classifier used in TDE (decision_tree, random_forest, xgboost, lightgbm)")
 hyperparam.add_argument("--n_estimators", type = int, default = 10, 
                         help = "num of estimators in random forest")
 hyperparam.add_argument("--criterion", type = str, default = "gini", 
@@ -52,8 +54,10 @@ hyperparam.add_argument("--verbose", type = int, default = 0,
 # Convert argparser to dict
 hyperparam = vars(hyperparam.parse_args())
 hyperparam["min_samples_split"] = int(hyperparam["min_samples_split"]) if hyperparam["min_samples_split"] >= 1.0 else hyperparam["min_samples_split"]
+print(hyperparam)
 categorical_features = ['app', 'device', 'os', 'channel']
 rare_category_threshold = [50, 50, 50, 50]
+start_time = time.time()
 TDE = TimeDependentEnsembler(classifier_name = hyperparam["classifier_name"],
                              dependency_length = hyperparam["dependency_length"], 
                              dependency_weight_decay = hyperparam["dependency_weight_decay"], 
@@ -70,7 +74,7 @@ if hyperparam["verbose"] == 1:
     print ("Verbose mode activated, auc scores in the front reflect the performance of models trained by data near cur batch.")
 
 for i in range(hyperparam["phases"]):
-    cur_data = pd.read_csv('/Users/daoyangshan/DSGA1003/train_tail.csv', skiprows = range(1, begin + i * batch_len), 
+    cur_data = pd.read_csv('/scratch/tx443/ML/train.csv', skiprows = range(1, begin + i * batch_len), 
                            nrows = batch_len * (batches_as_train + 1))
     cur_y = cur_data['is_attributed']
     cur_X = cur_data.drop(['attributed_time', 'is_attributed'], axis = 1)
@@ -91,7 +95,8 @@ for i in range(hyperparam["phases"]):
     auc_record.append(auc)
    
 print (auc_record)
-plt.figure()
-plt.plot(auc_record)
+print ('--------------Time spend on all phasese: {0} -----------------'.format(time.time()-start_time))
+#plt.figure()
+#plt.plot(auc_record)
 #plt.savefig(<dir name>)
 #plt.show()
