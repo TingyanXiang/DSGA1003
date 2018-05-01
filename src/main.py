@@ -11,8 +11,7 @@ import matplotlib.pyplot as plt
 from sklearn import metrics
 from cleaner import get_train_features, get_test_features
 from TDE import TimeDependentEnsembler
-    
-#hyperparam = {"class_weight": "balanced"}
+
 hyperparam = argparse.ArgumentParser(description = "TDE Demo")
 # Model-side params
 hyperparam.add_argument("--classifier_name", type = str, default = "random_forest", 
